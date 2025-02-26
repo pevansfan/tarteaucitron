@@ -1,0 +1,49 @@
+services:
+  wordpress-db:
+    container_name: wordpress-db
+    image: mysql:lts
+    volumes:
+     - ./db:/var/lib/mysql
+    #  - ./confs/my.cnf:/etc/my.cnf
+    restart: always
+    ports:
+      - 3306:3306
+    environment:
+      MYSQL_ROOT_PASSWORD: root_password_to_change
+      MYSQL_DATABASE: wordpress
+      MYSQL_USER: user
+      MYSQL_PASSWORD: password_to_change
+
+
+  wordpress:
+    container_name: wordpress
+    depends_on:
+      - wordpress-db
+    image: wordpress:latest
+    ports:
+      - 80:80
+    restart: always
+    volumes:
+     - ./html:/var/www/html
+    environment:
+      WORDPRESS_DB_HOST: wordpress-db:3306
+      WORDPRESS_DB_USER: user
+      WORDPRESS_DB_PASSWORD: password_to_change
+      WORDPRESS_DB_NAME: wordpress
+
+
+  wordpress-pma:
+    image: phpmyadmin/phpmyadmin
+    container_name: wordpress-pma
+    depends_on:
+      - wordpress-db
+    environment:
+      - PMA_HOST=wordpress-db
+      - PMA_PORT=3306
+      - PMA_ARBITRARY=1
+      - PMA_USER=user
+      - PMA_PASSWORD=password_to_change
+      - UPLOAD_LIMIT=512M
+    ports:
+      - 8001:80
+    restart: always
